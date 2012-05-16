@@ -37,8 +37,8 @@ int progskeet_set_gpio_dir(struct progskeet_handle* handle, const uint16_t dir)
         return 0;
 
     cmdbuf[0] = PROGSKEET_CMD_SET_GPIO_DIR;
-    cmdbuf[1] = (dir & 0x00FF) >> 0;
-    cmdbuf[2] = (dir & 0xFF00) >> 8;
+    cmdbuf[1] = (dir >> 0) & 0xFF;
+    cmdbuf[2] = (dir >> 8) & 0xFF;
 
     if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
         return res;
@@ -60,8 +60,8 @@ int progskeet_set_gpio(struct progskeet_handle* handle, const uint16_t gpio)
         return 0;
 
     cmdbuf[0] = PROGSKEET_CMD_SET_GPIO;
-    cmdbuf[1] = (gpio & 0x00FF) >> 0;
-    cmdbuf[2] = (gpio & 0xFF00) >> 8;
+    cmdbuf[1] = (gpio >> 0) & 0xFF;
+    cmdbuf[2] = (gpio >> 8) & 0xFF;
 
     if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
         return res;
@@ -98,10 +98,10 @@ int progskeet_wait_gpio(struct progskeet_handle* handle, const uint16_t mask, co
         return 0;
 
     cmdbuf[0] = PROGSKEET_CMD_WAIT_GPIO;
-    cmdbuf[1] = (value & 0x00FF) >> 0;
-    cmdbuf[2] = (value & 0xFF00) >> 8;
-    cmdbuf[3] = (mask  & 0x00FF) >> 0;
-    cmdbuf[4] = (mask  & 0xFF00) >> 8;
+    cmdbuf[1] = (value >> 0) & 0xFF;
+    cmdbuf[2] = (value >> 8) & 0xFF;
+    cmdbuf[3] = (mask  >> 0) & 0xFF;
+    cmdbuf[4] = (mask  >> 8) & 0xFF;
 
     return progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf));
 }
@@ -122,9 +122,9 @@ int progskeet_set_addr(struct progskeet_handle* handle, const uint32_t addr, int
         return 0;
 
     cmdbuf[0] = PROGSKEET_CMD_SET_ADDR;
-    cmdbuf[1] = (maddr & 0x0000FF) >>  0;
-    cmdbuf[2] = (maddr & 0x00FF00) >>  8;
-    cmdbuf[3] = (maddr & 0xFF0000) >> 16;
+    cmdbuf[1] = (maddr >>  0) & 0xFF;
+    cmdbuf[2] = (maddr >>  8) & 0xFF;
+    cmdbuf[3] = (maddr >> 16) & 0xFF;
 
     if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
         return res;
@@ -144,8 +144,8 @@ int progskeet_set_data(struct progskeet_handle* handle, const uint16_t data)
     cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
     cmdbuf[1] = 0x01;
     cmdbuf[2] = 0x00;
-    cmdbuf[3] = (data & 0x00FF) >> 0;
-    cmdbuf[4] = (data & 0xFF00) >> 8;
+    cmdbuf[3] = (data >> 0) & 0xFF;
+    cmdbuf[4] = (data >> 8) & 0xFF;
 
     return progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf));
 }
