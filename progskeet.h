@@ -58,6 +58,10 @@ int DLL_API progskeet_get_gpio(struct progskeet_handle* handle, uint16_t* gpio);
 /* Waits for the the trigger conditions to be satisfied on the GPIO inputs */
 int DLL_API progskeet_wait_gpio(struct progskeet_handle* handle, const uint16_t mask, const uint16_t value);
 
+int DLL_API progskeet_assert_gpio(struct progskeet_handle* handle, const uint16_t gpio);
+
+int DLL_API progskeet_deassert_gpio(struct progskeet_handle* handle, const uint16_t gpio);
+
 int DLL_API progskeet_set_addr(struct progskeet_handle* handle, const uint32_t addr, int auto_incr);
 
 int DLL_API progskeet_set_data(struct progskeet_handle* handle, const uint16_t data);

@@ -109,6 +109,16 @@ int progskeet_wait_gpio(struct progskeet_handle* handle, const uint16_t mask, co
     return progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf));
 }
 
+int progskeet_assert_gpio(struct progskeet_handle* handle, const uint16_t gpio)
+{
+    return progskeet_set_gpio(handle, handle->cur_gpio | gpio);
+}
+
+int progskeet_deassert_gpio(struct progskeet_handle* handle, const uint16_t gpio)
+{
+    return progskeet_set_gpio(handle, handle->cur_gpio & ~gpio);
+}
+
 int progskeet_set_addr(struct progskeet_handle* handle, const uint32_t addr, int auto_incr)
 {
     char cmdbuf[4];
