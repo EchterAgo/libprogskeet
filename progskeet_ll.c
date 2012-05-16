@@ -84,6 +84,9 @@ int progskeet_get_gpio(struct progskeet_handle* handle, uint16_t* gpio)
     if ((res = progskeet_enqueue_rxloc(handle, gpio, sizeof(uint16_t))) < 0)
 	return res;
 
+    if ((res = progskeet_sync(handle)) < 0)
+	return res;
+
     return 0;
 }
 
