@@ -208,7 +208,7 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 
     blocksize = 0x1FFFE;
     if ((handle->cur_config & PROGSKEET_CFG_WORD) == 0)
-	blocksize /= 2; /* 0xFFFF */
+	blocksize >>= 1; /* 0xFFFF */
 
     while((end - cur) >= blocksize) {
 	cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
