@@ -75,6 +75,10 @@ int DLL_API progskeet_read_addr(struct progskeet_handle* handle, uint32_t addr, 
 /* Does nothing by the specified ammount, 48 nops are 1us */
 int DLL_API progskeet_nop(struct progskeet_handle* handle, const uint32_t amount);
 
+/*
+ * UTILITY FUNCTIONS
+ */
+
 /* Waits for the specified ammount of nanoseconds */
 int DLL_API progskeet_wait_ns(struct progskeet_handle* handle, const uint32_t ns);
 

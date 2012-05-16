@@ -10,6 +10,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
     progskeet_comm.c
     progskeet_ll.c
+    progskeet_utils.c
     )
 
 if(WIN32)
