@@ -140,17 +140,20 @@ int progskeet_set_addr(struct progskeet_handle* handle, const uint32_t addr, int
 int progskeet_set_data(struct progskeet_handle* handle, const uint16_t data)
 {
     char cmdbuf[5];
+    size_t idx = 0;
 
     if (!handle)
         return -1;
 
-    cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
-    cmdbuf[1] = 0x01;
-    cmdbuf[2] = 0x00;
-    cmdbuf[3] = (data >> 0) & 0xFF;
-    cmdbuf[4] = (data >> 8) & 0xFF;
+    cmdbuf[idx++] = PROGSKEET_CMD_WRITE_CYCLE;
+    cmdbuf[idx++] = 0x01;
+    cmdbuf[idx++] = 0x00;
+    cmdbuf[idx++] = (data >> 0) & 0xFF;
 
-    return progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf));
+    if ((handle->cur_config & PROGSKEET_CFG_WORD) == 0)
+	cmdbuf[idx++] = (data >> 8) & 0xFF;
+
+    return progskeet_enqueue_tx_buf(handle, cmdbuf, idx);
 }
 
 int progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, const int word)
