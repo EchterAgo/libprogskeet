@@ -75,10 +75,16 @@ int progskeet_get_gpio(struct progskeet_handle* handle, uint16_t* gpio)
 {
     int res;
 
+    if (!handle)
+        return -1;
+
     if ((res = progskeet_enqueue_tx(handle, PROGSKEET_CMD_GET_GPIO)) < 0)
         return res;
 
-    return progskeet_enqueue_rxloc(handle, gpio, sizeof(uint16_t));
+    if ((res = progskeet_enqueue_rxloc(handle, gpio, sizeof(uint16_t))) < 0)
+	return res;
+
+    return 0;
 }
 
 int progskeet_wait_gpio(struct progskeet_handle* handle, const uint16_t mask, const uint16_t value)
@@ -130,7 +136,18 @@ int progskeet_set_addr(struct progskeet_handle* handle, const uint32_t addr, int
 
 int progskeet_set_data(struct progskeet_handle* handle, const uint16_t data)
 {
-    return 0;
+    char cmdbuf[5];
+
+    if (!handle)
+        return -1;
+
+    cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
+    cmdbuf[1] = 0x01;
+    cmdbuf[2] = 0x00;
+    cmdbuf[3] = (data & 0x00FF) >> 0;
+    cmdbuf[4] = (data & 0xFF00) >> 8;
+
+    return progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf));
 }
 
 int progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, const int word)
@@ -164,9 +181,11 @@ int progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, c
 
 int progskeet_write(struct progskeet_handle* handle, const char* buf, const size_t len)
 {
+    char cmdbuf[3];
     size_t blocksize;
-    char* cur;
-    char* end;
+    const char* cur;
+    const char* end;
+    int res;
 
     cur = buf;
     end = buf + len;
@@ -176,18 +195,29 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 	blocksize /= 2; /* 0xFFFF */
 
     while((end - cur) >= blocksize) {
-	progskeet_enqueue_tx(handle, PROGSKEET_CMD_WRITE_CYCLE);
-	progskeet_enqueue_tx(handle, 0xFF);
-	progskeet_enqueue_tx(handle, 0xFF);
-	progskeet_enqueue_tx_buf(handle, cur, blocksize);
+	cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
+	cmdbuf[1] = 0xFF;
+	cmdbuf[2] = 0xFF;
+
+	if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+	    return res;
+
+	if ((res = progskeet_enqueue_tx_buf(handle, cur, blocksize)) < 0)
+	    return res;
+
 	cur += blocksize;
     }
 
     if ((end - cur) > 0) {
-        progskeet_enqueue_tx(handle, PROGSKEET_CMD_WRITE_CYCLE);
-        progskeet_enqueue_tx(handle, (uint8_t)((end - cur) >> 0));
-        progskeet_enqueue_tx(handle, (uint8_t)((end - cur) >> 8));
-        progskeet_enqueue_tx_buf(handle, cur, (end - cur));
+        cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
+        cmdbuf[1] = (uint8_t)(((end - cur) >> 0) & 0xFF);
+	cmdbuf[2] = (uint8_t)(((end - cur) >> 8) & 0xFF);
+
+        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+            return res;
+
+        if ((res = progskeet_enqueue_tx_buf(handle, cur, blocksize)) < 0)
+            return res;
     }
 
     return 0;
@@ -195,8 +225,10 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 
 int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
 {
+    char cmdbuf[3];
     size_t blocksize;
     size_t remaining;
+    int res;
 
     remaining = len;
 
@@ -205,16 +237,23 @@ int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
 	blocksize /= 2; /* 0xFFFF */
 
     while(remaining >= blocksize) {
-	progskeet_enqueue_tx(handle, PROGSKEET_CMD_READ_CYCLE);
-	progskeet_enqueue_tx(handle, 0xFF);
-	progskeet_enqueue_tx(handle, 0xFF);
+        cmdbuf[0] = PROGSKEET_CMD_READ_CYCLE;
+        cmdbuf[1] = 0xFF;
+        cmdbuf[2] = 0xFF;
+
+        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+            return res;
+
 	remaining -= blocksize;
     }
 
     if (remaining > 0) {
-        progskeet_enqueue_tx(handle, PROGSKEET_CMD_READ_CYCLE);
-        progskeet_enqueue_tx(handle, (uint8_t)(remaining >> 0));
-        progskeet_enqueue_tx(handle, (uint8_t)(remaining >> 8));
+        cmdbuf[0] = PROGSKEET_CMD_READ_CYCLE;
+        cmdbuf[1] = (uint8_t)((remaining >> 0) & 0xFF);
+        cmdbuf[2] = (uint8_t)((remaining >> 8) & 0xFF);
+
+        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+            return res;
     }
 
     progskeet_enqueue_rx_buf(handle, buf, len);
@@ -244,19 +283,28 @@ int progskeet_read_addr(struct progskeet_handle* handle, uint32_t addr, uint16_t
 
 int progskeet_nop(struct progskeet_handle* handle, const uint32_t amount)
 {
+    char cmdbuf[2];
     uint32_t remaining;
+    int res;
 
     remaining = amount;
 
     while (remaining >= 0xFF) {
-	progskeet_enqueue_tx(handle, PROGSKEET_CMD_NOP);
-	progskeet_enqueue_tx(handle, 0xFF);
+	cmdbuf[0] = PROGSKEET_CMD_NOP;
+	cmdbuf[1] = 0xFF;
+
+	if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+	    return res;
+
 	remaining -= 0xFF;
     }
 
     if (remaining > 0) {
-	progskeet_enqueue_tx(handle, PROGSKEET_CMD_NOP);
-	progskeet_enqueue_tx(handle, (uint8_t)(remaining & 0xFF));
+        cmdbuf[0] = PROGSKEET_CMD_NOP;
+        cmdbuf[1] = (uint8_t)(remaining & 0xFF);
+
+        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+            return res;
     }
 
     return 0;
