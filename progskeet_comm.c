@@ -6,19 +6,20 @@
 #ifdef __APPLE__
 #include <libusb-legacy/usb.h>
 #else /* !__APPLE__ */
-#include <usb.h>
+#include <libusb-1.0/libusb.h>
 #endif /* __APPLE__ */
 #else /* WIN32 */
-#include <lusb0_usb.h>
+#include <libusb.h>
 #endif /* !WIN32 */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "progskeet.h"
 #include "progskeet_private.h"
 
 /* usblib helpers */
-#define USB_HANDLE(x) ((struct usb_dev_handle*)x->hdev)
+#define USB_HANDLE(x) ((struct libusb_device_handle*)x->hdev)
 
 /* USB defines */
 #define PROGSKEET_USB_VID 0x1988
@@ -62,8 +63,8 @@ int progskeet_init()
     static int inited = 0;
 
     if (inited == 0) {
-        usb_init();
-        usb_set_debug(255);
+        libusb_init(NULL);
+        libusb_set_debug(NULL, 3);
 
         inited = 1;
     }
@@ -71,60 +72,20 @@ int progskeet_init()
     return 0;
 }
 
-int progskeet_open(struct progskeet_handle** handle)
+static int progskeet_open_int(struct progskeet_handle** handle, struct libusb_device* dev)
 {
-    struct usb_bus* bus;
-    struct usb_device* dev;
-
-    if (!handle)
-        return -1;
-
-    dev = NULL;
-
-    usb_find_busses(); /* find all busses */
-    usb_find_devices(); /* find all connected devices */
-
-    bus = usb_get_busses();
-    while (bus) {
-        dev = bus->devices;
-        while (dev) {
-            if (dev->descriptor.idVendor  == PROGSKEET_USB_VID &&
-                dev->descriptor.idProduct == PROGSKEET_USB_PID) {
-                /* Easy now, Skeeter */
-                break;
-            }
-
-            /* We don't take kindly to your kind around here! */
-
-            dev = dev->next;
-        }
-
-        bus = bus->next;
-    }
-
-    if (!dev)
-        return -2;
-
-    return progskeet_open_specific(handle, dev);
-}
-
-int progskeet_open_specific(struct progskeet_handle** handle, void* vdev)
-{
-    struct usb_device* dev;
-    struct usb_dev_handle* hdev;
-
-    dev = (struct usb_device*)vdev;
+    struct libusb_device_handle* hdev;
 
     if (!handle || !dev)
         return -1;
 
-    if (!(hdev = usb_open(dev)))
+    if (libusb_open(dev, &hdev) < 0)
         return -3;
 
-    if (usb_set_configuration(hdev, PROGSKEET_USB_CFG) < 0)
+    if (libusb_set_configuration(hdev, PROGSKEET_USB_CFG) < 0)
         return -4;
 
-    if (usb_claim_interface(hdev, PROGSKEET_USB_INT) < 0)
+    if (libusb_claim_interface(hdev, PROGSKEET_USB_INT) < 0)
         return -5;
 
     *handle = (struct progskeet_handle*)malloc(sizeof(struct progskeet_handle));
@@ -138,12 +99,72 @@ int progskeet_open_specific(struct progskeet_handle** handle, void* vdev)
     return 0;
 }
 
+int progskeet_open(struct progskeet_handle** handle)
+{
+    ssize_t numdevs;
+    ssize_t i;
+    struct libusb_device** devs = NULL;
+    struct libusb_device_descriptor descr;
+    struct libusb_device_handle* hdev;
+    uint8_t bus;
+    uint8_t addr;
+    int found = 0;
+
+    if (!handle)
+        return -1;
+
+    if (!handle)
+        return -2;
+
+    *handle = NULL;
+
+    progskeet_log_global(progskeet_log_level_info, "Enumerating USB devices\n");
+
+    if ((numdevs = libusb_get_device_list(NULL, &devs)) < 0)
+        return -3;
+
+    for (i = 0; i < numdevs; i++) {
+        if (libusb_get_device_descriptor(devs[i], &descr) < 0)
+            continue;
+
+        bus = libusb_get_bus_number(devs[i]);
+        addr = libusb_get_device_address(devs[i]);
+
+        progskeet_log_global(progskeet_log_level_debug, "Bus %03d Device %03d: ID %04x:%04x\n",
+                             bus, addr, descr.idVendor, descr.idProduct);
+
+        if (descr.idVendor == PROGSKEET_USB_VID && descr.idProduct == PROGSKEET_USB_PID) {
+            progskeet_log_global(progskeet_log_level_info, "Trying to open device on bus %d address %d\n", bus, addr);
+
+            found++;
+
+            /* Easy now, Skeeter */
+            if (progskeet_open_int(handle, devs[i]) == 0)
+                break;
+        }
+    }
+
+    libusb_free_device_list(devs, 1);
+
+    if (!*handle) {
+        if (found == 0) {
+            progskeet_log_global(progskeet_log_level_error, "No mathing device found\n");
+        } else {
+            progskeet_log_global(progskeet_log_level_error, "Found %d devices but none could be opened\n", found);
+        }
+
+        return -4;
+    }
+
+    return 0;
+}
+
 int progskeet_close(struct progskeet_handle* handle)
 {
     if (!handle)
         return -1;
 
-    usb_release_interface(USB_HANDLE(handle), 0);
+    libusb_close(USB_HANDLE(handle));
 
     free(handle->txbuf);
 
@@ -188,7 +209,7 @@ int progskeet_reset(struct progskeet_handle* handle)
 
 static int progskeet_rx(struct progskeet_handle* handle)
 {
-    int res, ret;
+    int count, ret;
     size_t received;
     struct progskeet_rxloc* rxnext;
 
@@ -198,19 +219,18 @@ static int progskeet_rx(struct progskeet_handle* handle)
     while (handle->rxlist && !handle->cancel && ret == 0) {
         rxnext = handle->rxlist->next;
 
-	/* TODO: Handle timeouts */
+        /* TODO: Handle timeouts */
         received = 0;
         while ((handle->rxlist->len - received) > 0 && !handle->cancel) {
-            res = usb_bulk_read(USB_HANDLE(handle),
-                                PROGSKEET_USB_EP_IN,
-                                handle->rxlist->addr + received,
-                                handle->rxlist->len - received,
-                                PROGSKEET_USB_TIMEOUT);
+            if (libusb_bulk_transfer(USB_HANDLE(handle),
+                                     PROGSKEET_USB_EP_IN,
+                                     handle->rxlist->addr + received,
+                                     handle->rxlist->len - received,
+                                     &count,
+                                     PROGSKEET_USB_TIMEOUT) < 0)
+                continue;
 
-            if (res < 0)
-		continue;
-
-            received += res;
+            received += count;
         }
 
         free(handle->rxlist);
@@ -225,7 +245,7 @@ static int progskeet_rx(struct progskeet_handle* handle)
 
 static int progskeet_tx(struct progskeet_handle* handle)
 {
-    int res, ret;
+    int count, ret;
     size_t written;
 
     if (!handle)
@@ -239,16 +259,15 @@ static int progskeet_tx(struct progskeet_handle* handle)
     /* TODO: Handle timeout */
     written = 0;
     while ((handle->txlen - written) > 0 && !handle->cancel) {
-        res = usb_bulk_write(USB_HANDLE(handle),
-                             PROGSKEET_USB_EP_OUT,
-                             handle->txbuf + written,
-                             handle->txlen - written,
-                             PROGSKEET_USB_TIMEOUT);
+        if (libusb_bulk_transfer(USB_HANDLE(handle),
+                                 PROGSKEET_USB_EP_OUT,
+                                 handle->txbuf + written,
+                                 handle->txlen - written,
+                                 &count,
+                                 PROGSKEET_USB_TIMEOUT) < 0)
+            continue;
 
-        if (res < 0)
-	    continue;
-
-        written += res;
+        written += count;
     }
 
     handle->txlen = 0;
