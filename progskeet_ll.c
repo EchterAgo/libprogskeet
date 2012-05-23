@@ -81,11 +81,11 @@ int progskeet_get_gpio(struct progskeet_handle* handle, uint16_t* gpio)
     if ((res = progskeet_enqueue_tx(handle, PROGSKEET_CMD_GET_GPIO)) < 0)
         return res;
 
-    if ((res = progskeet_enqueue_rxloc(handle, gpio, sizeof(uint16_t))) < 0)
-	return res;
+    if ((res = progskeet_enqueue_rx_buf(handle, gpio, sizeof(uint16_t))) < 0)
+        return res;
 
     if ((res = progskeet_sync(handle)) < 0)
-	return res;
+        return res;
 
     return 0;
 }
@@ -221,13 +221,13 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 	if ((res = progskeet_enqueue_tx_buf(handle, cur, blocksize)) < 0)
 	    return res;
 
-	cur += blocksize;
+        cur += blocksize;
     }
 
     if ((end - cur) > 0) {
         cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
         cmdbuf[1] = (uint8_t)(((end - cur) >> 0) & 0xFF);
-	cmdbuf[2] = (uint8_t)(((end - cur) >> 8) & 0xFF);
+        cmdbuf[2] = (uint8_t)(((end - cur) >> 8) & 0xFF);
 
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
             return res;
@@ -260,7 +260,7 @@ int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
             return res;
 
-	remaining -= blocksize;
+        remaining -= blocksize;
     }
 
     if (remaining > 0) {
@@ -306,13 +306,11 @@ int progskeet_nop(struct progskeet_handle* handle, const uint32_t amount)
     remaining = amount;
 
     while (remaining >= 0xFF) {
-	cmdbuf[0] = PROGSKEET_CMD_NOP;
-	cmdbuf[1] = 0xFF;
+        cmdbuf[0] = PROGSKEET_CMD_NOP;
+        cmdbuf[1] = 0xFF;
 
-	if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
-	    return res;
-
-	remaining -= 0xFF;
+        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+            return res;
     }
 
     if (remaining > 0) {
