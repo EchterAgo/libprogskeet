@@ -14,9 +14,16 @@ set(SOURCE_FILES
     progskeet_log.c
     )
 
-if(WIN32)
+OPTION(BUILD_PROGSKEET_SHARED "Build the progskeet library as a shared library (dll/so)." ON)
+
+if(BUILD_PROGSKEET_SHARED)
+  set(PROGSKEET_LIBRARY_TYPE SHARED)
+
+  if(WIN32)
     add_definitions(-DDLL_EXPORTS)
-    add_library(progskeet SHARED ${HEADER_FILES} ${SOURCE_FILES})
-else()
-    add_library(progskeet STATIC ${HEADER_FILES} ${SOURCE_FILES})
-endif()
+  endif(WIN32)
+else(BUILD_PROGSKEET_SHARED)
+  set(PROGSKEET_LIBRARY_TYPE STATIC)
+endif(BUILD_PROGSKEET_SHARED)
+
+add_library(progskeet ${PROGSKEET_LIBRARY_TYPE} ${HEADER_FILES} ${SOURCE_FILES})
