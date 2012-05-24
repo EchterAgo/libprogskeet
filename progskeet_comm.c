@@ -219,16 +219,9 @@ int progskeet_reset(struct progskeet_handle* handle)
 
     handle->cancel = 0;
 
-    handle->cur_addr = 0;
     progskeet_set_addr(handle, 0, 0);
-
-    handle->cur_gpio = 0;
     progskeet_set_gpio(handle, 0);
-
-    handle->cur_gpio_dir = 0;
     progskeet_set_gpio_dir(handle, 0);
-
-    handle->cur_config = 0;
     progskeet_set_config(handle, 10, 1);
 
     handle->addr_mask = ~0;

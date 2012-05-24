@@ -33,9 +33,6 @@ int progskeet_set_gpio_dir(struct progskeet_handle* handle, const uint16_t dir)
     if (!handle)
         return -1;
 
-    if (handle->cur_gpio_dir == dir)
-        return 0;
-
     cmdbuf[0] = PROGSKEET_CMD_SET_GPIO_DIR;
     cmdbuf[1] = (dir >> 0) & 0xFF;
     cmdbuf[2] = (dir >> 8) & 0xFF;
@@ -55,9 +52,6 @@ int progskeet_set_gpio(struct progskeet_handle* handle, const uint16_t gpio)
 
     if (!handle)
         return -1;
-
-    if (handle->cur_gpio == gpio)
-        return 0;
 
     cmdbuf[0] = PROGSKEET_CMD_SET_GPIO;
     cmdbuf[1] = (gpio >> 0) & 0xFF;
@@ -128,9 +122,6 @@ int progskeet_set_addr(struct progskeet_handle* handle, const uint32_t addr, int
     maddr = (addr & handle->addr_mask) | handle->addr_add;
     maddr |= auto_incr ? PROGSKEET_ADDR_AUTO_INC : 0;
 
-    if (handle->cur_addr == maddr)
-        return 0;
-
     cmdbuf[0] = PROGSKEET_CMD_SET_ADDR;
     cmdbuf[1] = (maddr >>  0) & 0xFF;
     cmdbuf[2] = (maddr >>  8) & 0xFF;
@@ -138,8 +129,6 @@ int progskeet_set_addr(struct progskeet_handle* handle, const uint32_t addr, int
 
     if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
         return res;
-
-    handle->cur_addr = maddr;
 
     return 0;
 }
@@ -177,9 +166,6 @@ int progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, c
 
     if (word)
         config |= PROGSKEET_CFG_WORD;
-
-    if (handle->cur_config == config)
-        return 0;
 
     cmdbuf[0] = PROGSKEET_CMD_SET_CONFIG;
     cmdbuf[1] = config;

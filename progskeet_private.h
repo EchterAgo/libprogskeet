@@ -21,7 +21,6 @@ struct progskeet_handle
     /* Set to 1 to cancel any running operations */
     int cancel;
 
-    uint32_t cur_addr;
     uint16_t cur_gpio;
     uint16_t cur_gpio_dir;
     uint8_t cur_config;
