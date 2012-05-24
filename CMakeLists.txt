@@ -1,18 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(ProgSkeet)
+project(PROGSKEET)
 
-set(HEADER_FILES
-    progskeet.h
-    progskeet_private.h
-    )
+set(
+  HEADER_FILES
+  progskeet.h
+  progskeet_private.h
+  )
 
-set(SOURCE_FILES
-    progskeet_comm.c
-    progskeet_ll.c
-    progskeet_utils.c
-    progskeet_log.c
-    )
+set(
+  SOURCE_FILES
+  progskeet_comm.c
+  progskeet_ll.c
+  progskeet_utils.c
+  progskeet_log.c
+  )
 
 OPTION(BUILD_PROGSKEET_SHARED "Build the progskeet library as a shared library (dll/so)." ON)
 
