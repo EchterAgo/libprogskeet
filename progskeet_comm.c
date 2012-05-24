@@ -248,24 +248,23 @@ static int progskeet_rx(struct progskeet_handle* handle)
 
     /* Compute the total receive size */
     while (handle->rxlist && !handle->cancel && ret == 0) {
-        rxnext = handle->rxlist->next;
-
         /* TODO: Handle timeouts */
         received = 0;
         while ((handle->rxlist->len - received) > 0 && !handle->cancel) {
-            if (libusb_bulk_transfer(USB_HANDLE(handle),
-                                     PROGSKEET_USB_EP_IN,
-                                     handle->rxlist->addr + received,
-                                     handle->rxlist->len - received,
-                                     &count,
-                                     PROGSKEET_USB_TIMEOUT) < 0)
+            if ((res = libusb_bulk_transfer(USB_HANDLE(handle),
+                                            PROGSKEET_USB_EP_IN,
+                                            handle->rxlist->addr + received,
+                                            handle->rxlist->len - received,
+                                            &count,
+                                            PROGSKEET_USB_TIMEOUT)) < 0) {
                 continue;
+            }
 
             received += count;
         }
 
+        rxnext = handle->rxlist->next;
         free(handle->rxlist);
-
         handle->rxlist = rxnext;
     }
 
@@ -277,7 +276,7 @@ static int progskeet_rx(struct progskeet_handle* handle)
 static int progskeet_tx(struct progskeet_handle* handle)
 {
     int count, ret;
-    size_t written;
+    size_t sent;
 
     if (!handle)
         return -1;
@@ -288,17 +287,18 @@ static int progskeet_tx(struct progskeet_handle* handle)
     ret = 0;
 
     /* TODO: Handle timeout */
-    written = 0;
-    while ((handle->txlen - written) > 0 && !handle->cancel) {
+    sent = 0;
+    while ((handle->txlen - sent) > 0 && !handle->cancel) {
         if (libusb_bulk_transfer(USB_HANDLE(handle),
                                  PROGSKEET_USB_EP_OUT,
-                                 handle->txbuf + written,
-                                 handle->txlen - written,
+                                 handle->txbuf + sent,
+                                 handle->txlen - sent,
                                  &count,
-                                 PROGSKEET_USB_TIMEOUT) < 0)
+                                 PROGSKEET_USB_TIMEOUT) < 0) {
             continue;
+        }
 
-        written += count;
+        sent += count;
     }
 
     handle->txlen = 0;
@@ -364,12 +364,9 @@ int progskeet_enqueue_rx_buf(struct progskeet_handle* handle, void* addr, size_t
     }
 
     rxloci = handle->rxlist;
-    for (;;) {
-        if (rxloci->next == NULL) {
-            rxloci->next = rxloc;
-            return 0;
-        }
-
+    while (rxloci->next != NULL)
         rxloci = rxloci->next;
-    }
+    rxloci->next = rxloc;
+
+    return 0;
 }
