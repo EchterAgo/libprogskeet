@@ -18,12 +18,6 @@
 #endif /* _WIN32 */
 
 /*
- * DEFINES
- */
-
-#define PROGSKEET_VERSION "0.0.1"
-
-/*
  * CAUTION: ANYTHING IS POSSIBLE WITH ... THE HANDLE!
  */
 
