@@ -106,7 +106,7 @@ int progskeet_open(struct progskeet_handle** handle)
     int found = 0;
 
     if (g_inited == 0) {
-        progskeet_log_global(progskeet_log_level_error, "library is not initialized\n");
+        progskeet_log_global(progskeet_log_level_error, "Library is not initialized, call progskeet_init\n");
         return -1;
     }
 
@@ -136,8 +136,10 @@ int progskeet_open(struct progskeet_handle** handle)
             found++;
 
             /* Easy now, Skeeter */
-            if (progskeet_open_int(handle, devs[i]) == 0)
+            if (progskeet_open_int(handle, devs[i]) == 0) {
+                progskeet_log_global(progskeet_log_level_info, "Successfully opened device on bus %d address %d\n", bus, addr);
                 break;
+            }
         }
     }
 
@@ -161,6 +163,8 @@ int progskeet_close(struct progskeet_handle* handle)
     if (!handle)
         return -1;
 
+    progskeet_log(handle, progskeet_log_level_info, "Closing device\n");
+
     libusb_release_interface(USB_HANDLE(handle), PROGSKEET_USB_INT);
 
     libusb_close(USB_HANDLE(handle));
@@ -181,7 +185,7 @@ int progskeet_reset(struct progskeet_handle* handle)
     if (!handle)
         return -1;
 
-    progskeet_log_global(progskeet_log_level_info, "Resetting device\n");
+    progskeet_log(handle, progskeet_log_level_info, "Resetting device\n");
 
     /* Handle reset */
     handle->txlen = 0;
@@ -208,9 +212,10 @@ int progskeet_reset(struct progskeet_handle* handle)
 
     /* USB reset */
     if ((res = libusb_reset_device(USB_HANDLE(handle))) < 0) {
+        progskeet_log(handle, progskeet_log_level_error, "Reset failed\n");
+
         if (res == LIBUSB_ERROR_NOT_FOUND) {
             /* Needs reenumeration or device has been disconnected */
-            progskeet_log_global(progskeet_log_level_error, "Reset failed, closing handle\n");
             progskeet_close(handle);
         }
 
@@ -218,13 +223,13 @@ int progskeet_reset(struct progskeet_handle* handle)
     }
 
     if (libusb_set_configuration(USB_HANDLE(handle), PROGSKEET_USB_CFG) < 0) {
-        progskeet_log_global(progskeet_log_level_error, "Failed to set USB configuration\n");
+        progskeet_log(handle, progskeet_log_level_error, "Failed to set USB configuration\n");
         return -3;
     }
 
     /* Will return 0 even if interface is already claimed */
     if (libusb_claim_interface(USB_HANDLE(handle), PROGSKEET_USB_INT) < 0) {
-        progskeet_log_global(progskeet_log_level_error, "Failed to claim interface\n");
+        progskeet_log(handle, progskeet_log_level_error, "Failed to claim interface\n");
         return -4;
     }
 
