@@ -11,6 +11,7 @@ set(SOURCE_FILES
     progskeet_comm.c
     progskeet_ll.c
     progskeet_utils.c
+    progskeet_log.c
     )
 
 if(WIN32)

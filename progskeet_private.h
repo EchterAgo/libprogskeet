@@ -28,6 +28,8 @@ struct progskeet_handle
      */
     uint32_t addr_mask;
     uint32_t addr_add;
+
+    progskeet_log_target log_target;
 };
 
 #endif /* _PROGSKEET_PRIVATE_H */
