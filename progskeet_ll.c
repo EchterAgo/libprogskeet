@@ -208,18 +208,18 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 
     blocksize = 0x1FFFE;
     if ((handle->cur_config & PROGSKEET_CFG_WORD) == 0)
-	blocksize >>= 1; /* 0xFFFF */
+        blocksize >>= 1; /* 0xFFFF */
 
     while((end - cur) >= blocksize) {
-	cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
-	cmdbuf[1] = 0xFF;
-	cmdbuf[2] = 0xFF;
+        cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
+        cmdbuf[1] = 0xFF;
+        cmdbuf[2] = 0xFF;
 
-	if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
-	    return res;
+        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
+            return res;
 
-	if ((res = progskeet_enqueue_tx_buf(handle, cur, blocksize)) < 0)
-	    return res;
+        if ((res = progskeet_enqueue_tx_buf(handle, cur, blocksize)) < 0)
+            return res;
 
         cur += blocksize;
     }
