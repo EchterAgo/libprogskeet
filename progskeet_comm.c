@@ -89,6 +89,7 @@ static int progskeet_open_int(struct progskeet_handle** handle, struct libusb_de
         return -5;
 
     *handle = (struct progskeet_handle*)malloc(sizeof(struct progskeet_handle));
+    memset(*handle, 0, sizeof(struct progskeet_handle));
 
     (*handle)->hdev = hdev;
 
