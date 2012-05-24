@@ -104,23 +104,23 @@ int DLL_API progskeet_write_addr(struct progskeet_handle* handle, uint32_t addr,
 
 int DLL_API progskeet_read_addr(struct progskeet_handle* handle, uint32_t addr, uint16_t *data);
 
-/* Does nothing by the specified ammount, 48 nops are 1us */
+/* Does nothing by the specified amount, 48 nops are 1us */
 int DLL_API progskeet_nop(struct progskeet_handle* handle, const uint32_t amount);
 
 /*
  * UTILITY FUNCTIONS
  */
 
-/* Waits for the specified ammount of nanoseconds */
+/* Waits for the specified amount of nanoseconds */
 int DLL_API progskeet_wait_ns(struct progskeet_handle* handle, const uint32_t ns);
 
-/* Waits for the specified ammount of microseconds */
+/* Waits for the specified amount of microseconds */
 int DLL_API progskeet_wait_us(struct progskeet_handle* handle, const uint32_t us);
 
-/* Waits for the specified ammount of milliseconds */
+/* Waits for the specified amount of milliseconds */
 int DLL_API progskeet_wait_ms(struct progskeet_handle* handle, const uint32_t ms);
 
-/* Waits for the specified ammount of seconds */
+/* Waits for the specified amount of seconds */
 int DLL_API progskeet_wait(struct progskeet_handle* handle, const uint32_t seconds);
 
 /*
