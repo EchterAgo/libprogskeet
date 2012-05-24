@@ -311,6 +311,8 @@ int progskeet_nop(struct progskeet_handle* handle, const uint32_t amount)
 
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
             return res;
+
+        remaining -= 0xFF;
     }
 
     if (remaining > 0) {
