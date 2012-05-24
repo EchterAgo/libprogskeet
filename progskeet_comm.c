@@ -215,6 +215,7 @@ int progskeet_reset(struct progskeet_handle* handle)
 
     progskeet_free_rxlist(handle->rxlist);
     handle->rxlist = NULL;
+    handle->rxlen = 0;
 
     handle->cancel = 0;
 
@@ -241,27 +242,35 @@ int progskeet_reset(struct progskeet_handle* handle)
 static int progskeet_rx(struct progskeet_handle* handle)
 {
     int count, ret, res;
-    size_t received;
+    size_t offset;
     struct progskeet_rxloc* rxnext;
+    char *buf;
 
-    ret = 0;
+    if (!handle)
+        return -1;
 
-    /* Compute the total receive size */
-    while (handle->rxlist && !handle->cancel && ret == 0) {
-        /* TODO: Handle timeouts */
-        received = 0;
-        while ((handle->rxlist->len - received) > 0 && !handle->cancel) {
-            if ((res = libusb_bulk_transfer(USB_HANDLE(handle),
-                                            PROGSKEET_USB_EP_IN,
-                                            handle->rxlist->addr + received,
-                                            handle->rxlist->len - received,
-                                            &count,
-                                            PROGSKEET_USB_TIMEOUT)) < 0) {
-                continue;
-            }
+    if (handle->rxlen < 1)
+        return 0;
 
-            received += count;
+    buf = malloc(handle->rxlen);
+
+    offset = 0;
+    while (offset < handle->rxlen && !handle->cancel) {
+        if ((res = libusb_bulk_transfer(USB_HANDLE(handle), PROGSKEET_USB_EP_IN,
+                                        buf + offset, handle->rxlen, &count,
+                                        PROGSKEET_USB_TIMEOUT)) < 0) {
+            continue;
         }
+
+        handle->rxlen -= count;
+        offset += count;
+    }
+
+    offset = 0;
+    while (handle->rxlist) {
+        memcpy(handle->rxlist->addr, buf + offset, handle->rxlist->len);
+
+        offset += handle->rxlist->len;
 
         rxnext = handle->rxlist->next;
         free(handle->rxlist);
@@ -357,6 +366,8 @@ int progskeet_enqueue_rx_buf(struct progskeet_handle* handle, void* addr, size_t
     rxloc->next = NULL;
     rxloc->addr = addr;
     rxloc->len = len;
+
+    handle->rxlen += len;
 
     if (handle->rxlist == NULL) {
         handle->rxlist = rxloc;

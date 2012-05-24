@@ -84,9 +84,6 @@ int progskeet_get_gpio(struct progskeet_handle* handle, uint16_t* gpio)
     if ((res = progskeet_enqueue_rx_buf(handle, gpio, sizeof(uint16_t))) < 0)
         return res;
 
-    if ((res = progskeet_sync(handle)) < 0)
-        return res;
-
     return 0;
 }
 
@@ -161,7 +158,7 @@ int progskeet_set_data(struct progskeet_handle* handle, const uint16_t data)
     cmdbuf[idx++] = (data >> 0) & 0xFF;
 
     if ((handle->cur_config & PROGSKEET_CFG_WORD) == 0)
-	cmdbuf[idx++] = (data >> 8) & 0xFF;
+        cmdbuf[idx++] = (data >> 8) & 0xFF;
 
     return progskeet_enqueue_tx_buf(handle, cmdbuf, idx);
 }
@@ -242,17 +239,17 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
 {
     char cmdbuf[3];
-    size_t blocksize;
     size_t remaining;
+    size_t len_words;
     int res;
 
-    remaining = len;
+    len_words = len;
+    if ((handle->cur_config & PROGSKEET_CFG_WORD) > 0)
+        len_words /= 2;
 
-    blocksize = 0x1FFFE;
-    if ((handle->cur_config & PROGSKEET_CFG_WORD) == 0)
-	blocksize /= 2; /* 0xFFFF */
+    remaining = len_words;
 
-    while(remaining >= blocksize) {
+    while(remaining >= 0xFFFF) {
         cmdbuf[0] = PROGSKEET_CMD_READ_CYCLE;
         cmdbuf[1] = 0xFF;
         cmdbuf[2] = 0xFF;
@@ -260,7 +257,7 @@ int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
             return res;
 
-        remaining -= blocksize;
+        remaining -= 0xFFFF;
     }
 
     if (remaining > 0) {
@@ -281,8 +278,11 @@ int progskeet_write_addr(struct progskeet_handle* handle, uint32_t addr, uint16_
 {
     int res;
 
-    if ((res = progskeet_set_addr(handle, addr, 0)) < 0)
-        return res;
+    /* FIXME: Is this check correct, why? */
+    if (addr != 0) {
+        if ((res = progskeet_set_addr(handle, addr, 0)) < 0)
+            return res;
+    }
 
     return progskeet_write(handle, (char*)&data, sizeof(uint16_t));
 }

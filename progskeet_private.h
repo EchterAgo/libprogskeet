@@ -16,6 +16,7 @@ struct progskeet_handle
 
     /* Receive list */
     struct progskeet_rxloc* rxlist;
+    size_t rxlen;
 
     /* Set to 1 to cancel any running operations */
     int cancel;
