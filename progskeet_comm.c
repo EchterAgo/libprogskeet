@@ -187,29 +187,6 @@ int progskeet_reset(struct progskeet_handle* handle)
 
     progskeet_log(handle, progskeet_log_level_info, "Resetting device\n");
 
-    /* Handle reset */
-    handle->txlen = 0;
-
-    progskeet_free_rxlist(handle->rxlist);
-    handle->rxlist = NULL;
-
-    handle->cancel = 0;
-
-    handle->cur_addr = 0;
-    progskeet_set_addr(handle, 0, 0);
-
-    handle->cur_gpio = 0;
-    progskeet_set_gpio(handle, 0);
-
-    handle->cur_gpio_dir = 0;
-    progskeet_set_gpio_dir(handle, 0);
-
-    handle->cur_config = 0;
-    progskeet_set_config(handle, 10, 1);
-
-    handle->addr_mask = ~0;
-    handle->addr_add = 0;
-
     /* USB reset */
     if ((res = libusb_reset_device(USB_HANDLE(handle))) < 0) {
         progskeet_log(handle, progskeet_log_level_error, "Reset failed\n");
@@ -233,12 +210,37 @@ int progskeet_reset(struct progskeet_handle* handle)
         return -4;
     }
 
+    /* Handle reset */
+    handle->txlen = 0;
+
+    progskeet_free_rxlist(handle->rxlist);
+    handle->rxlist = NULL;
+
+    handle->cancel = 0;
+
+    handle->cur_addr = 0;
+    progskeet_set_addr(handle, 0, 0);
+
+    handle->cur_gpio = 0;
+    progskeet_set_gpio(handle, 0);
+
+    handle->cur_gpio_dir = 0;
+    progskeet_set_gpio_dir(handle, 0);
+
+    handle->cur_config = 0;
+    progskeet_set_config(handle, 10, 1);
+
+    handle->addr_mask = ~0;
+    handle->addr_add = 0;
+
+    progskeet_sync(handle);
+
     return 0;
 }
 
 static int progskeet_rx(struct progskeet_handle* handle)
 {
-    int count, ret;
+    int count, ret, res;
     size_t received;
     struct progskeet_rxloc* rxnext;
 
