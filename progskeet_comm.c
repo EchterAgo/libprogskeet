@@ -82,12 +82,6 @@ static int progskeet_open_int(struct progskeet_handle** handle, struct libusb_de
     if (libusb_open(dev, &hdev) < 0)
         return -3;
 
-    if (libusb_set_configuration(hdev, PROGSKEET_USB_CFG) < 0)
-        return -4;
-
-    if (libusb_claim_interface(hdev, PROGSKEET_USB_INT) < 0)
-        return -5;
-
     *handle = (struct progskeet_handle*)malloc(sizeof(struct progskeet_handle));
     memset(*handle, 0, sizeof(struct progskeet_handle));
 
@@ -167,6 +161,8 @@ int progskeet_close(struct progskeet_handle* handle)
     if (!handle)
         return -1;
 
+    libusb_release_interface(USB_HANDLE(handle), PROGSKEET_USB_INT);
+
     libusb_close(USB_HANDLE(handle));
 
     free(handle->txbuf);
@@ -180,9 +176,14 @@ int progskeet_close(struct progskeet_handle* handle)
 
 int progskeet_reset(struct progskeet_handle* handle)
 {
+    int res;
+
     if (!handle)
         return -1;
 
+    progskeet_log_global(progskeet_log_level_info, "Resetting device\n");
+
+    /* Handle reset */
     handle->txlen = 0;
 
     progskeet_free_rxlist(handle->rxlist);
@@ -205,7 +206,27 @@ int progskeet_reset(struct progskeet_handle* handle)
     handle->addr_mask = ~0;
     handle->addr_add = 0;
 
-    /* TODO: USB reset */
+    /* USB reset */
+    if ((res = libusb_reset_device(USB_HANDLE(handle))) < 0) {
+        if (res == LIBUSB_ERROR_NOT_FOUND) {
+            /* Needs reenumeration or device has been disconnected */
+            progskeet_log_global(progskeet_log_level_error, "Reset failed, closing handle\n");
+            progskeet_close(handle);
+        }
+
+        return -2;
+    }
+
+    if (libusb_set_configuration(USB_HANDLE(handle), PROGSKEET_USB_CFG) < 0) {
+        progskeet_log_global(progskeet_log_level_error, "Failed to set USB configuration\n");
+        return -3;
+    }
+
+    /* Will return 0 even if interface is already claimed */
+    if (libusb_claim_interface(USB_HANDLE(handle), PROGSKEET_USB_INT) < 0) {
+        progskeet_log_global(progskeet_log_level_error, "Failed to claim interface\n");
+        return -4;
+    }
 
     return 0;
 }
