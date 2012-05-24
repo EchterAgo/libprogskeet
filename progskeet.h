@@ -55,8 +55,6 @@ int DLL_API progskeet_init();
 
 int DLL_API progskeet_open(struct progskeet_handle** handle);
 
-int DLL_API progskeet_open_specific(struct progskeet_handle** handle, void* vdev);
-
 int DLL_API progskeet_close(struct progskeet_handle* handle);
 
 int DLL_API progskeet_reset(struct progskeet_handle* handle);
