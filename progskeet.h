@@ -41,10 +41,6 @@ int DLL_API progskeet_log_set_target(struct progskeet_handle* handle, progskeet_
 
 int DLL_API progskeet_log_set_global_target(progskeet_log_target target);
 
-int DLL_API progskeet_log(struct progskeet_handle* handle, const enum progskeet_log_level level, const char* fmt, ...);
-
-int DLL_API progskeet_log_global(const enum progskeet_log_level level, const char* fmt, ...);
-
 const char* DLL_API progskeet_log_get_level_name(const enum progskeet_log_level level);
 
 /*

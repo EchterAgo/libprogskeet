@@ -1,6 +1,10 @@
 #ifndef _PROGSKEET_PRIVATE_H
 #define _PROGSKEET_PRIVATE_H
 
+/*
+ * PRIVATE HANDLE
+ */
+
 struct progskeet_handle
 {
     /* LibUSB device handle */
@@ -31,5 +35,13 @@ struct progskeet_handle
 
     progskeet_log_target log_target;
 };
+
+/*
+ * PRIVATE LOG FUNCTIONS
+ */
+
+int progskeet_log(struct progskeet_handle* handle, const enum progskeet_log_level level, const char* fmt, ...);
+
+int progskeet_log_global(const enum progskeet_log_level level, const char* fmt, ...);
 
 #endif /* _PROGSKEET_PRIVATE_H */

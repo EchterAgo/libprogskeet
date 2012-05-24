@@ -33,7 +33,7 @@ static progskeet_log_target progskeet_log_get_target(struct progskeet_handle* ha
     return handle->log_target;
 }
 
-int progskeet_log_int(struct progskeet_handle* handle, const enum progskeet_log_level level, const char* fmt, va_list argp)
+static int progskeet_log_int(struct progskeet_handle* handle, const enum progskeet_log_level level, const char* fmt, va_list argp)
 {
     static char buf[(1024 * 8)];
     progskeet_log_target target;
@@ -49,7 +49,6 @@ int progskeet_log_int(struct progskeet_handle* handle, const enum progskeet_log_
 }
 
 int progskeet_log(struct progskeet_handle* handle, const enum progskeet_log_level level, const char* fmt, ...)
-
 {
     va_list argp;
     int res;
