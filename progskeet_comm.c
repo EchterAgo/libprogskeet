@@ -37,6 +37,8 @@
 /* Other defines */
 #define PROGSKEET_TXBUF_LEN (2 ^ 11) /* 2 KiB */
 
+static int g_inited = 0;
+
 struct progskeet_rxloc
 {
     char* addr;
@@ -60,13 +62,11 @@ static int progskeet_free_rxlist(struct progskeet_rxloc* list)
 
 int progskeet_init()
 {
-    static int inited = 0;
-
-    if (inited == 0) {
+    if (g_inited == 0) {
         libusb_init(NULL);
         libusb_set_debug(NULL, 3);
 
-        inited = 1;
+        g_inited = 1;
     }
 
     return 0;
@@ -111,8 +111,10 @@ int progskeet_open(struct progskeet_handle** handle)
     uint8_t addr;
     int found = 0;
 
-    if (!handle)
+    if (g_inited == 0) {
+        progskeet_log_global(progskeet_log_level_error, "library is not initialized\n");
         return -1;
+    }
 
     if (!handle)
         return -2;
