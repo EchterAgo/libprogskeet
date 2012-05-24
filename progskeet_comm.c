@@ -127,7 +127,7 @@ int progskeet_open(struct progskeet_handle** handle)
         bus = libusb_get_bus_number(devs[i]);
         addr = libusb_get_device_address(devs[i]);
 
-        progskeet_log_global(progskeet_log_level_debug, "Bus %03d Device %03d: ID %04x:%04x\n",
+        progskeet_log_global(progskeet_log_level_verbose, "Bus %03d Device %03d: ID %04x:%04x\n",
                              bus, addr, descr.idVendor, descr.idProduct);
 
         if (descr.idVendor == PROGSKEET_USB_VID && descr.idProduct == PROGSKEET_USB_PID) {
