@@ -232,7 +232,7 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
             return res;
 
-        if ((res = progskeet_enqueue_tx_buf(handle, cur, blocksize)) < 0)
+        if ((res = progskeet_enqueue_tx_buf(handle, cur, (end - cur))) < 0)
             return res;
     }
 
