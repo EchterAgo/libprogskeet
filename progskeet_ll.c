@@ -161,11 +161,8 @@ int progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, c
     if (!handle)
         return -1;
 
-    config = delay;
-    config &= PROGSKEET_CFG_DELAY_MASK;
-
-    if (word)
-        config |= PROGSKEET_CFG_WORD;
+    config = (delay & PROGSKEET_CFG_DELAY_MASK);
+    config |= (word ? PROGSKEET_CFG_WORD : 0);
 
     cmdbuf[0] = PROGSKEET_CMD_SET_CONFIG;
     cmdbuf[1] = config;
