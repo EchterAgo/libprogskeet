@@ -35,7 +35,7 @@
 #define PROGSKEET_USB_TIMEOUT 1000 /* 1 second timeout for USB transfers */
 
 /* Other defines */
-#define PROGSKEET_TXBUF_LEN (2 ^ 11) /* 2 KiB */
+#define PROGSKEET_TXBUF_LEN (1024 * 1024)
 
 static int g_inited = 0;
 
