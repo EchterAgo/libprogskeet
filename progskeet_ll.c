@@ -69,7 +69,7 @@ int progskeet_get_gpio(struct progskeet_handle* handle, uint16_t* gpio)
 {
     int res;
 
-    if (!handle)
+    if (!handle || !gpio)
         return -1;
 
     if ((res = progskeet_enqueue_tx(handle, PROGSKEET_CMD_GET_GPIO)) < 0)
