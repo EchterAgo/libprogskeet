@@ -234,8 +234,8 @@ int progskeet_reset(struct progskeet_handle* handle)
 
 static int progskeet_rx(struct progskeet_handle* handle)
 {
-    int count, ret, res;
-    size_t offset;
+    int count, res, i;
+    size_t offset, rxlen;
     struct progskeet_rxloc* rxnext;
     char *buf;
 
@@ -248,14 +248,15 @@ static int progskeet_rx(struct progskeet_handle* handle)
     buf = malloc(handle->rxlen);
 
     offset = 0;
-    while (offset < handle->rxlen && !handle->cancel) {
+    rxlen = handle->rxlen;
+    while (offset < rxlen && !handle->cancel) {
         if ((res = libusb_bulk_transfer(USB_HANDLE(handle), PROGSKEET_USB_EP_IN,
-                                        buf + offset, handle->rxlen, &count,
+                                        buf + offset, rxlen, &count,
                                         PROGSKEET_USB_TIMEOUT)) < 0) {
             continue;
         }
 
-        handle->rxlen -= count;
+        rxlen -= count;
         offset += count;
     }
 
@@ -272,7 +273,7 @@ static int progskeet_rx(struct progskeet_handle* handle)
 
     progskeet_free_rxlist(handle->rxlist);
 
-    return ret;
+    return 0;
 }
 
 static int progskeet_tx(struct progskeet_handle* handle)

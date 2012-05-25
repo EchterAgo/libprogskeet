@@ -181,42 +181,50 @@ int progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, c
 int progskeet_write(struct progskeet_handle* handle, const char* buf, const size_t len)
 {
     char cmdbuf[3];
+    size_t remaining;
     size_t blocksize;
-    const char* cur;
-    const char* end;
-    int res;
+    size_t len_words;
 
-    cur = buf;
-    end = buf + len;
+    if (!handle || !buf)
+        return -1;
 
-    blocksize = 0x1FFFE;
-    if ((handle->cur_config & PROGSKEET_CFG_WORD) == 0)
-        blocksize >>= 1; /* 0xFFFF */
+    len_words = len;
+    blocksize = 0xFFFF;
+    if ((handle->cur_config & PROGSKEET_CFG_WORD) > 0) {
+        len_words /= 2;
+        blocksize *= 2;
+    }
 
-    while((end - cur) >= blocksize) {
+    remaining = len_words;
+
+    while(remaining >= 0xFFFF) {
         cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
         cmdbuf[1] = 0xFF;
         cmdbuf[2] = 0xFF;
 
-        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
-            return res;
+        if (progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf)) < 0)
+            return -2;
 
-        if ((res = progskeet_enqueue_tx_buf(handle, cur, blocksize)) < 0)
-            return res;
+        if (progskeet_enqueue_tx_buf(handle, buf, blocksize) < 0)
+            return -3;
 
-        cur += blocksize;
+        buf += blocksize;
+        remaining -= 0xFFFF;
     }
 
-    if ((end - cur) > 0) {
+    if (remaining > 0) {
         cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
-        cmdbuf[1] = (uint8_t)(((end - cur) >> 0) & 0xFF);
-        cmdbuf[2] = (uint8_t)(((end - cur) >> 8) & 0xFF);
+        cmdbuf[1] = (uint8_t)((remaining >> 0) & 0xFF);
+        cmdbuf[2] = (uint8_t)((remaining >> 8) & 0xFF);
 
-        if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
-            return res;
+        if (progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf)) < 0)
+            return -4;
 
-        if ((res = progskeet_enqueue_tx_buf(handle, cur, (end - cur))) < 0)
-            return res;
+        if ((handle->cur_config & PROGSKEET_CFG_WORD) > 0)
+            remaining *= 2;
+
+        if (progskeet_enqueue_tx_buf(handle, buf, remaining) < 0)
+            return -5;
     }
 
     return 0;
