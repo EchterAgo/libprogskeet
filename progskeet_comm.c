@@ -245,13 +245,10 @@ static int progskeet_rx(struct progskeet_handle* handle)
     if (handle->rxlen < 1)
         return 0;
 
-    progskeet_log(handle, progskeet_log_level_info, "rxs\n");
-
     buf = malloc(handle->rxlen);
 
     offset = 0;
     while (offset < handle->rxlen && !handle->cancel) {
-        progskeet_log(handle, progskeet_log_level_info, "rx\n");
         if ((res = libusb_bulk_transfer(USB_HANDLE(handle), PROGSKEET_USB_EP_IN,
                                         buf + offset, handle->rxlen, &count,
                                         PROGSKEET_USB_TIMEOUT)) < 0) {
