@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * DLL API
  */
@@ -63,5 +67,9 @@ int DLL_API progskeet_reset(struct progskeet_handle* handle);
 
 /* Cancels any running operation */
 int DLL_API progskeet_cancel(struct progskeet_handle* handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _PROGSKEET_H */
