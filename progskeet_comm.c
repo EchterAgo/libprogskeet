@@ -150,7 +150,7 @@ static int progskeet_open_int(struct progskeet_handle** handle, uint8_t bus, uin
 
     if (!*handle) {
         if (found == 0) {
-            progskeet_log_global(progskeet_log_level_error, "No mathing device found\n");
+            progskeet_log_global(progskeet_log_level_error, "No matching device found\n");
         } else {
             progskeet_log_global(progskeet_log_level_error, "Found %d devices but none could be opened\n", found);
         }
