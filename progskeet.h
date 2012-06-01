@@ -68,6 +68,12 @@ int DLL_API progskeet_reset(struct progskeet_handle* handle);
 /* Cancels any running operation */
 int DLL_API progskeet_cancel(struct progskeet_handle* handle);
 
+/*
+ * UTILITY FUNCTIONS
+ */
+
+int DLL_API progskeet_testshorts(struct progskeet_handle* handle, uint32_t* result);
+
 #ifdef __cplusplus
 }
 #endif
