@@ -61,6 +61,8 @@ int DLL_API progskeet_init();
 
 int DLL_API progskeet_open(struct progskeet_handle** handle);
 
+int DLL_API progskeet_open_specific(struct progskeet_handle** handle, uint8_t bus, uint8_t addr);
+
 int DLL_API progskeet_close(struct progskeet_handle* handle);
 
 int DLL_API progskeet_reset(struct progskeet_handle* handle);

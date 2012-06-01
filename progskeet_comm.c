@@ -72,7 +72,7 @@ int progskeet_init()
     return 0;
 }
 
-static int progskeet_open_int(struct progskeet_handle** handle, struct libusb_device* dev)
+static int progskeet_alloc(struct progskeet_handle** handle, struct libusb_device* dev)
 {
     struct libusb_device_handle* hdev;
 
@@ -94,15 +94,15 @@ static int progskeet_open_int(struct progskeet_handle** handle, struct libusb_de
     return 0;
 }
 
-int progskeet_open(struct progskeet_handle** handle)
+static int progskeet_open_int(struct progskeet_handle** handle, uint8_t bus, uint8_t addr)
 {
     ssize_t numdevs;
     ssize_t i;
     struct libusb_device** devs = NULL;
     struct libusb_device_descriptor descr;
     struct libusb_device_handle* hdev;
-    uint8_t bus;
-    uint8_t addr;
+    uint8_t cbus;
+    uint8_t caddr;
     int found = 0;
 
     if (g_inited == 0) {
@@ -124,20 +124,23 @@ int progskeet_open(struct progskeet_handle** handle)
         if (libusb_get_device_descriptor(devs[i], &descr) < 0)
             continue;
 
-        bus = libusb_get_bus_number(devs[i]);
-        addr = libusb_get_device_address(devs[i]);
+        cbus = libusb_get_bus_number(devs[i]);
+        caddr = libusb_get_device_address(devs[i]);
 
         progskeet_log_global(progskeet_log_level_verbose, "Bus %03d Device %03d: ID %04x:%04x\n",
-                             bus, addr, descr.idVendor, descr.idProduct);
+                             cbus, caddr, descr.idVendor, descr.idProduct);
 
         if (descr.idVendor == PROGSKEET_USB_VID && descr.idProduct == PROGSKEET_USB_PID) {
-            progskeet_log_global(progskeet_log_level_info, "Trying to open device on bus %d address %d\n", bus, addr);
+            if ((bus != 0xFF && cbus != bus) || (addr != 0xFF && caddr != addr))
+                continue;
+
+            progskeet_log_global(progskeet_log_level_info, "Trying to open device on bus %d address %d\n", cbus, caddr);
 
             found++;
 
             /* Easy now, Skeeter */
-            if (progskeet_open_int(handle, devs[i]) == 0) {
-                progskeet_log_global(progskeet_log_level_info, "Successfully opened device on bus %d address %d\n", bus, addr);
+            if (progskeet_alloc(handle, devs[i]) == 0) {
+                progskeet_log_global(progskeet_log_level_info, "Successfully opened device on bus %d address %d\n", cbus, caddr);
                 break;
             }
         }
@@ -156,6 +159,16 @@ int progskeet_open(struct progskeet_handle** handle)
     }
 
     return 0;
+}
+
+int progskeet_open(struct progskeet_handle** handle)
+{
+    return progskeet_open_int(handle, 0xFF, 0xFF);
+}
+
+int progskeet_open_specific(struct progskeet_handle** handle, uint8_t bus, uint8_t addr)
+{
+    return progskeet_open_int(handle, bus, addr);
 }
 
 int progskeet_close(struct progskeet_handle* handle)
