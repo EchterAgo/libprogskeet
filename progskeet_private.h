@@ -107,4 +107,6 @@ int DLL_API progskeet_wait_ms(struct progskeet_handle* handle, const uint32_t ms
 /* Waits for the specified amount of seconds */
 int DLL_API progskeet_wait(struct progskeet_handle* handle, const uint32_t seconds);
 
+int DLL_API progskeet_testshorts(struct progskeet_handle* handle, uint32_t* result);
+
 #endif /* _PROGSKEET_PRIVATE_H */
