@@ -141,7 +141,7 @@ int progskeet_set_data(struct progskeet_handle* handle, const uint16_t data)
     cmdbuf[idx++] = 0x00;
     cmdbuf[idx++] = (data >> 0) & 0xFF;
 
-    if ((handle->cur_config & PROGSKEET_CFG_WORD) == 0)
+    if ((handle->cur_config & PROGSKEET_CFG_16BIT) == 0)
         cmdbuf[idx++] = (data >> 8) & 0xFF;
 
     return progskeet_enqueue_tx_buf(handle, cmdbuf, idx);
@@ -181,7 +181,7 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 
     len_words = len;
     blocksize = 0xFFFF;
-    if ((handle->cur_config & PROGSKEET_CFG_WORD) > 0) {
+    if ((handle->cur_config & PROGSKEET_CFG_16BIT) > 0) {
         len_words /= 2;
         blocksize *= 2;
     }
@@ -210,7 +210,7 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
         if (progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf)) < 0)
             return -4;
 
-        if ((handle->cur_config & PROGSKEET_CFG_WORD) > 0)
+        if ((handle->cur_config & PROGSKEET_CFG_16BIT) > 0)
             remaining *= 2;
 
         if (progskeet_enqueue_tx_buf(handle, buf, remaining) < 0)
@@ -228,7 +228,7 @@ int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
     int res;
 
     len_words = len;
-    if ((handle->cur_config & PROGSKEET_CFG_WORD) > 0)
+    if ((handle->cur_config & PROGSKEET_CFG_16BIT) > 0)
         len_words /= 2;
 
     remaining = len_words;
