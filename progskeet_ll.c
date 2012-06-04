@@ -16,12 +16,7 @@
 #define PROGSKEET_CMD_WAIT_GPIO     0x08
 #define PROGSKEET_CMD_NOP           0x09
 
-/* Configuration (PROGSKEET_CMD_SET_CONFIG) */
 #define PROGSKEET_CFG_DELAY_MASK    0x0F
-#define PROGSKEET_CFG_WORD          (1 << 4)
-#define PROGSKEET_CFG_TRISTATE      (1 << 5)
-#define PROGSKEET_CFG_WAIT_RDY      (1 << 6)
-#define PROGSKEET_CFG_BYTESWAP      (1 << 7)
 
 #define PROGSKEET_ADDR_AUTO_INC (1 << 23)
 
@@ -152,17 +147,16 @@ int progskeet_set_data(struct progskeet_handle* handle, const uint16_t data)
     return progskeet_enqueue_tx_buf(handle, cmdbuf, idx);
 }
 
-int progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, const int word)
+int progskeet_set_config(struct progskeet_handle* handle, uint8_t delay, uint8_t config)
 {
     char cmdbuf[2];
-    uint8_t config;
     int res;
 
     if (!handle)
         return -1;
 
-    config = (delay & PROGSKEET_CFG_DELAY_MASK);
-    config |= (word ? PROGSKEET_CFG_WORD : 0);
+    config &= ~PROGSKEET_CFG_DELAY_MASK;
+    config |= (delay & PROGSKEET_CFG_DELAY_MASK);
 
     cmdbuf[0] = PROGSKEET_CMD_SET_CONFIG;
     cmdbuf[1] = config;

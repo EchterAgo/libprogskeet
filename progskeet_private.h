@@ -78,7 +78,13 @@ int DLL_API progskeet_set_addr(struct progskeet_handle* handle, const uint32_t a
 
 int DLL_API progskeet_set_data(struct progskeet_handle* handle, const uint16_t data);
 
-int DLL_API progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, const int word);
+/* Configuration (progskeet_set_config) */
+#define PROGSKEET_CFG_WORD          (1 << 4)
+#define PROGSKEET_CFG_TRISTATE      (1 << 5)
+#define PROGSKEET_CFG_WAIT_RDY      (1 << 6)
+#define PROGSKEET_CFG_BYTESWAP      (1 << 7)
+
+int DLL_API progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, const uint8_t config);
 
 int DLL_API progskeet_write(struct progskeet_handle* handle, const char* buf, const size_t len);
 

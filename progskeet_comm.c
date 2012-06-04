@@ -235,7 +235,7 @@ int progskeet_reset(struct progskeet_handle* handle)
     progskeet_set_addr(handle, 0, 0);
     progskeet_set_gpio(handle, 0);
     progskeet_set_gpio_dir(handle, 0);
-    progskeet_set_config(handle, 10, 1);
+    progskeet_set_config(handle, 10, PROGSKEET_CFG_WORD);
 
     handle->addr_mask = ~0;
     handle->addr_add = 0;
