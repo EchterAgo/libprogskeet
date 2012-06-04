@@ -188,11 +188,11 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
 
     remaining = len_words;
 
-    while(remaining >= 0xFFFF) {
-        cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
-        cmdbuf[1] = 0xFF;
-        cmdbuf[2] = 0xFF;
+    cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
+    cmdbuf[1] = 0xFF;
+    cmdbuf[2] = 0xFF;
 
+    while(remaining >= 0xFFFF) {
         if (progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf)) < 0)
             return -2;
 
@@ -204,7 +204,6 @@ int progskeet_write(struct progskeet_handle* handle, const char* buf, const size
     }
 
     if (remaining > 0) {
-        cmdbuf[0] = PROGSKEET_CMD_WRITE_CYCLE;
         cmdbuf[1] = (uint8_t)((remaining >> 0) & 0xFF);
         cmdbuf[2] = (uint8_t)((remaining >> 8) & 0xFF);
 
@@ -234,11 +233,11 @@ int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
 
     remaining = len_words;
 
-    while(remaining >= 0xFFFF) {
-        cmdbuf[0] = PROGSKEET_CMD_READ_CYCLE;
-        cmdbuf[1] = 0xFF;
-        cmdbuf[2] = 0xFF;
+    cmdbuf[0] = PROGSKEET_CMD_READ_CYCLE;
+    cmdbuf[1] = 0xFF;
+    cmdbuf[2] = 0xFF;
 
+    while(remaining >= 0xFFFF) {
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
             return res;
 
@@ -246,7 +245,6 @@ int progskeet_read(struct progskeet_handle* handle, char* buf, const size_t len)
     }
 
     if (remaining > 0) {
-        cmdbuf[0] = PROGSKEET_CMD_READ_CYCLE;
         cmdbuf[1] = (uint8_t)((remaining >> 0) & 0xFF);
         cmdbuf[2] = (uint8_t)((remaining >> 8) & 0xFF);
 
@@ -290,10 +288,10 @@ int progskeet_nop(struct progskeet_handle* handle, const uint32_t amount)
 
     remaining = amount;
 
-    while (remaining >= 0xFF) {
-        cmdbuf[0] = PROGSKEET_CMD_NOP;
-        cmdbuf[1] = 0xFF;
+    cmdbuf[0] = PROGSKEET_CMD_NOP;
+    cmdbuf[1] = 0xFF;
 
+    while (remaining >= 0xFF) {
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
             return res;
 
@@ -301,7 +299,6 @@ int progskeet_nop(struct progskeet_handle* handle, const uint32_t amount)
     }
 
     if (remaining > 0) {
-        cmdbuf[0] = PROGSKEET_CMD_NOP;
         cmdbuf[1] = (uint8_t)(remaining & 0xFF);
 
         if ((res = progskeet_enqueue_tx_buf(handle, cmdbuf, sizeof(cmdbuf))) < 0)
