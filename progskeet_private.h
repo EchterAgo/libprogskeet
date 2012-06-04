@@ -82,7 +82,7 @@ int DLL_API progskeet_set_data(struct progskeet_handle* handle, const uint16_t d
 #define PROGSKEET_CFG_WORD          (1 << 4)
 #define PROGSKEET_CFG_TRISTATE      (1 << 5)
 #define PROGSKEET_CFG_WAIT_RDY      (1 << 6)
-#define PROGSKEET_CFG_BYTESWAP      (1 << 7)
+/* #define PROGSKEET_CFG_BYTESWAP      (1 << 7) This should be handled in the library */
 
 int DLL_API progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, const uint8_t config);
 
