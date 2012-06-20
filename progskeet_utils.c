@@ -35,7 +35,7 @@ int progskeet_testshorts(struct progskeet_handle* handle, uint32_t* result)
     if (!handle || !result)
         return -1;
 
-    progskeet_set_config(handle, 10, PROGSKEET_CFG_16BIT);
+    progskeet_config_set(handle, 0, PROGSKEET_CFG_16BIT, PROGSKEET_CFG_NONE);
 
     for(i = 0; i < 16; i++) {
         progskeet_write_addr(handle, 0, 1 << i);

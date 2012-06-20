@@ -239,7 +239,7 @@ int progskeet_reset(struct progskeet_handle* handle)
     /* Set the default configuration */
     handle->def_config.delay = 10;
     handle->def_config.is16bit = 1;
-    progskeet_set_config(handle, 0, PROGSKEET_CFG_NONE, PROGSKEET_CFG_NONE);
+    progskeet_config_set(handle, 0, PROGSKEET_CFG_NONE, PROGSKEET_CFG_NONE);
 
     handle->addr_mask = ~0;
     handle->addr_add = 0;

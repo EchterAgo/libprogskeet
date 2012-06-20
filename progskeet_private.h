@@ -83,7 +83,7 @@ int DLL_API progskeet_set_addr(struct progskeet_handle* handle, const uint32_t a
 
 int DLL_API progskeet_set_data(struct progskeet_handle* handle, const uint16_t data);
 
-/* Configuration (progskeet_set_config) */
+/* Configuration (progskeet_config_set) */
 #define PROGSKEET_CFG_NONE          0x00
 #define PROGSKEET_CFG_16BIT         (1 << 4)
 #define PROGSKEET_CFG_TRISTATE      (1 << 5)
