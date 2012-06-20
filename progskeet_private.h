@@ -34,6 +34,8 @@ struct progskeet_handle
     uint32_t addr_add;
 
     progskeet_log_target log_target;
+
+    struct progskeet_config def_config;
 };
 
 /*
@@ -79,12 +81,20 @@ int DLL_API progskeet_set_addr(struct progskeet_handle* handle, const uint32_t a
 int DLL_API progskeet_set_data(struct progskeet_handle* handle, const uint16_t data);
 
 /* Configuration (progskeet_set_config) */
+#define PROGSKEET_CFG_NONE          0x00
 #define PROGSKEET_CFG_16BIT         (1 << 4)
 #define PROGSKEET_CFG_TRISTATE      (1 << 5)
 #define PROGSKEET_CFG_WAIT_RDY      (1 << 6)
 /* #define PROGSKEET_CFG_BYTESWAP      (1 << 7) This should be handled in the library */
+#define PROGSKEET_CFG_ALL           0xFF
 
-int DLL_API progskeet_set_config(struct progskeet_handle* handle, const uint8_t delay, const uint8_t config);
+uint8_t DLL_API progskeet_config_from_struct(struct progskeet_config* config);
+
+int DLL_API progskeet_config_set(struct progskeet_handle* handle, struct progskeet_config* config, uint8_t add, uint8_t rem);
+
+int DLL_API progskeet_config_set_default(struct progskeet_handle* handle, struct progskeet_config* config);
+
+int DLL_API progskeet_config_set_byte(struct progskeet_handle* handle, uint8_t config);
 
 int DLL_API progskeet_write(struct progskeet_handle* handle, const char* buf, const size_t len);
 

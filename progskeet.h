@@ -33,6 +33,19 @@ extern "C" {
 
 struct progskeet_handle;
 
+struct progskeet_config
+{
+    /* 1/48 us */
+    uint8_t delay;
+
+    int is16bit;
+
+    int differential;
+    int verify;
+    int byte_swap;
+    int abort_on_error;
+};
+
 /*
  * LOGGING FUNCTIONS
  */

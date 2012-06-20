@@ -147,16 +147,53 @@ int progskeet_set_data(struct progskeet_handle* handle, const uint16_t data)
     return progskeet_enqueue_tx_buf(handle, cmdbuf, idx);
 }
 
-int progskeet_set_config(struct progskeet_handle* handle, uint8_t delay, uint8_t config)
+uint8_t progskeet_config_from_struct(struct progskeet_config* config)
+{
+    uint8_t cbyte;
+
+    if (!config)
+        return 0x00;
+
+    cbyte = (config.delay & PROGSKEET_CFG_DELAY_MASK);
+    cbyte |= config.16bit ? PROGSKEET_CFG_16BIT : 0;
+
+    return cbyte;
+}
+
+int progskeet_config_set(struct progskeet_handle* handle, struct progskeet_config* config, uint8_t add, uint8_t rem)
+{
+    uint8_t cbyte;
+
+    if (!handle)
+      return -1;
+
+    if (config)
+        cbyte = progskeet_config_from_struct(config);
+    else
+        cbyte = progskeet_config_from_struct(handle->def_config);
+
+    cbyte = (cbyte & ~rem) | add;
+
+    return progskeet_config_set_byte(handle, cbyte);
+}
+
+int progskeet_config_set_default(struct progskeet_handle* handle, struct progskeet_config* config)
+{
+    if (!handle)
+        return -1;
+
+    handle->def_config = *config;
+
+    return 0;
+}
+
+int progskeet_config_set_byte(struct progskeet_handle* handle, uint8_t config)
 {
     char cmdbuf[2];
     int res;
 
     if (!handle)
         return -1;
-
-    config &= ~PROGSKEET_CFG_DELAY_MASK;
-    config |= (delay & PROGSKEET_CFG_DELAY_MASK);
 
     cmdbuf[0] = PROGSKEET_CMD_SET_CONFIG;
     cmdbuf[1] = config;

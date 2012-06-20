@@ -235,7 +235,11 @@ int progskeet_reset(struct progskeet_handle* handle)
     progskeet_set_addr(handle, 0, 0);
     progskeet_set_gpio(handle, 0);
     progskeet_set_gpio_dir(handle, 0);
-    progskeet_set_config(handle, 10, PROGSKEET_CFG_16BIT);
+
+    /* Set the default configuration */
+    handle->def_config.delay = 10;
+    handle->def_config.is16bit = 1;
+    progskeet_set_config(handle, 0, PROGSKEET_CFG_NONE, PROGSKEET_CFG_NONE);
 
     handle->addr_mask = ~0;
     handle->addr_add = 0;
