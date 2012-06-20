@@ -154,8 +154,8 @@ uint8_t progskeet_config_from_struct(struct progskeet_config* config)
     if (!config)
         return 0x00;
 
-    cbyte = (config.delay & PROGSKEET_CFG_DELAY_MASK);
-    cbyte |= config.16bit ? PROGSKEET_CFG_16BIT : 0;
+    cbyte = (config->delay & PROGSKEET_CFG_DELAY_MASK);
+    cbyte |= config->is16bit ? PROGSKEET_CFG_16BIT : 0;
 
     return cbyte;
 }
@@ -164,13 +164,13 @@ int progskeet_config_set(struct progskeet_handle* handle, struct progskeet_confi
 {
     uint8_t cbyte;
 
-    if (!handle)
+    if (!handle || !config)
       return -1;
 
     if (config)
         cbyte = progskeet_config_from_struct(config);
     else
-        cbyte = progskeet_config_from_struct(handle->def_config);
+        cbyte = progskeet_config_from_struct(&handle->def_config);
 
     cbyte = (cbyte & ~rem) | add;
 
